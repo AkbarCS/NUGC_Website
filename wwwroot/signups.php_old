@@ -1,0 +1,340 @@
+<?php
+/*
+NOTICE: Please do not edit this unless you know what you're doing!
+If you need to add/change form fields then check out the .xml settings file!
+~ Josh A
+*/
+
+require_once 'Classes/PHPExcel.php';
+require_once 'Classes/PHPExcel/IOFactory.php';
+
+/* Displays all the form fields defined in the settings file */
+function displayFormFields($xml)
+{	
+	// Display the form fields
+	foreach($xml->children() as $field)
+	{ 
+		if($field->getName() == "field")
+		{
+			$fieldName = str_replace(" ", "-", $field['name']);
+			$fieldType = $field['type'];
+			$fieldLabel = $field['label'];
+			$fieldDescription = $field['description'];
+			$fieldRequired = $field['required'];
+			// Display the label and description
+			echo "<b>$fieldLabel</b>";
+			if($fieldRequired == "true")
+				echo "<font color='red'>*</font>";
+			echo "<br>\n";
+			if($fieldDescription != "")
+				echo "<i>$fieldDescription</i><br>\n";
+			// Display the form field
+			if($fieldType == "text")
+			{
+				echo "<input type='text' name='signup_$fieldName' ";
+				if($fieldRequired == "true")
+					echo "required ";
+				echo " value='" . getSavedField($fieldName) . "' /><br><br>\n";
+			}
+			else if($fieldType == "option")
+			{
+				$savedOption = getSavedField($fieldName);
+				foreach($field->children() as $option)
+				{
+					$optionName = $option['name'];
+					$optionLabel = $option['label'];
+					$selected = "";
+					if($savedOption == $optionName)
+						$selected = "checked='checked'";					
+					echo "<input type='radio' name='signup_$fieldName' value='$optionName' $selected> $optionLabel<br>\n";
+				}
+				echo "<br>\n";
+			}
+		}
+	}
+}
+
+/* Processes form POST data and saves in the CSV data file */
+function processForm($xml)
+{
+	$saveDetails = $_POST['remember_me'];
+	
+	// Get each field from the POST request and store it in an array
+	$data = array();
+	$i = 0;
+	foreach($xml->children() as $field)
+	{ 
+		if($field->getName() == "field")
+		{
+			$fieldName = str_replace(" ", "-", $field['name']);
+			$fieldValue = htmlentities($_POST['signup_' . $fieldName]);
+			$data[$i] = $fieldValue;
+			// Save in cookies if the user selected the option to
+			if($saveDetails == "true")
+				setSavedField($fieldName, $fieldValue);
+			else
+			{
+				setSavedField($fieldName, ""); // They have chosen to delete any saved preferences
+				setSavedField("Remember", false);
+			}
+			$i++;
+		}
+	}
+	
+	// Save form data to the csv file
+	$file = fopen(getDataFile($xml), "a");
+	fputcsv($file, $data);
+	fclose($file);
+}
+
+/* Sends the POST data to the master data file to allow for data analysis. 
+   Unlike the function above, this function sends the data to an .xlsx file. */
+function processFormDataAnalysis($xml)
+{
+	$objReader = PHPExcel_IOFactory::createReader('Excel2007');
+	
+	//tell the reader to include charts when it loads a file
+	$objReader->setIncludeCharts(TRUE);
+	
+	//load the file
+	$masterDataFile = $objReader->load("../dataAnalysis/signupsDataAnalysis.xlsx");
+	
+    $pointerToSheet = $masterDataFile->getActiveSheet();
+	
+	//get last blank row
+	$row = $pointerToSheet->getHighestRow()+1;
+	
+	//add date and time
+	$pointerToSheet->setCellValueByColumnAndRow(0, $row, date("d/m/Y"));
+	$pointerToSheet->setCellValueByColumnAndRow(1, $row, date("H:i"));
+	
+	//get names of fields from master data file
+	$dataFields = array();
+	$column = 2;
+	
+	$cellValue = $pointerToSheet->getCellByColumnAndRow($column, 1)->getValue();
+			
+	while($cellValue !== NULL && $cellValue !== '')
+	{
+		array_push($dataFields, $cellValue);
+		$column++;
+		$cellValue = $pointerToSheet->getCellByColumnAndRow($column, 1)->getValue();
+	}
+		
+	//Add relevant fields from POST request to the master data spreadsheet
+	$column = 2;
+	
+	foreach($dataFields as $fieldInMasterDataFile)
+	{			
+		foreach($xml->children() as $field)
+		{ 
+			if($field->getName() == "field")
+			{
+				$fieldName = str_replace(" ", "-", $field['name']);
+								
+				//if fields match, add value to spreadsheet
+				if(strcmp($fieldInMasterDataFile, $fieldName) == 0)
+				{
+					$fieldValue = htmlentities($_POST['signup_' . $fieldName]);
+					$pointerToSheet->setCellValueByColumnAndRow($column, $row, $fieldValue);
+					$column++;
+					break;
+				}
+			}
+		}		
+	}
+	
+	//write data to file
+	$objWriter = PHPExcel_IOFactory::createWriter($masterDataFile, "Excel2007");
+	$objWriter->setIncludeCharts(TRUE);
+	$objWriter->save("../dataAnalysis/signupsDataAnalysis.xlsx");
+}	
+
+/* Returns the current data file path */
+function getDataFile($xml)
+{
+	$weekend = date("Y-m-d", strtotime('Saturday this week'));
+	$file = "../signups/" . $weekend . ".csv";
+	if(!file_exists($file))
+	{
+		// If it doesn't exist then create one with the correct headings
+		$data = array();
+		$i = 0;
+		foreach($xml->children() as $field)
+		{ 
+			if($field->getName() == "field")
+			{
+				$fieldName = str_replace(" ", "-", $field['name']);
+				$data[$i] = $fieldName;
+				$i++;
+			}
+		}
+		$csvfile = fopen($file, "w");
+		fputcsv($csvfile, $data);
+		fclose($csvfile);
+	}
+	return $file;
+}
+
+/* Returns true or false whether or not the form is open */
+function isFormIsOpen($xml)
+{
+	// JOSH: DEBUG (skip open checks for this IP)
+	if($_SERVER['REMOTE_ADDR'] == "88.211.77.82")
+		return true;
+	
+	if($xml->active != "true")
+		return false;
+	date_default_timezone_set('Europe/London');
+	$startDay = strtotime($xml->activeStartDay . ' this week');
+	$start = strtotime('+' . $xml->activeStartTime . ' hours', $startDay);
+	$end = strtotime('+' . $xml->activePeriod . ' hours', $start);
+	$now = time();	
+	if($start < $now && $end > $now)
+		return true;
+	else
+		return false;
+}
+
+/* Returns the opening time of the form */
+function openTime($xml)
+{
+	date_default_timezone_set('Europe/London');
+	$startDay = strtotime($xml->activeStartDay . ' this week');
+	$start = strtotime('+' . $xml->activeStartTime . ' hours', $startDay);
+	$end = strtotime('+' . $xml->activePeriod . ' hours', $start);
+	$now = time();	
+	if($start > $now)
+	{
+		return $start;
+	}
+	else if($end < $now)
+	{
+		$startDay = strtotime($xml->activeStartDay . ' next week');
+		$start = strtotime('+' . $xml->activeStartTime . ' hours', $startDay);
+		return $start;
+	}	
+	return $start;
+}
+
+/* Gets the value of a saved field. If not saved then empty string is returned */
+function getSavedField($field)
+{
+	$name = "NUGC_" . $field;
+	if(isset($_COOKIE['NUGC_Remember']) && isset($_COOKIE[$name]))
+	{
+		if($_COOKIE['NUGC_Remember'] == true)
+			return $_COOKIE[$name];
+		else
+			return "";
+	}
+	else
+	{
+		return "";
+	}
+}
+
+/* Save (and overwrite) a field */
+function setSavedField($field, $value)
+{
+	setcookie("NUGC_" . $field, $value, time() + 315360000);
+	setcookie("NUGC_Remember", true, time() + 315360000);
+}
+
+/* Display the form (or the closed message) */
+function displayForm()
+{
+	global $xml;
+	?>
+	<link rel="stylesheet" href="signup-style.css">
+	<?php
+	if(isset($_GET['page']) && $_GET['page'] == "form")
+	{
+		if(!isFormIsOpen($xml))
+		{
+			$openTime = openTime($xml);
+			?>
+			<div class="signup_container"> 
+			<form name="signups" id="signup-form" style="font-size: 16px;">
+				<?php 
+				if($xml->active == "true")
+				{
+					?>
+					<b>Signups are currently closed until <?php echo date("l j F g:ia", $openTime); ?></b>
+					<?php
+				}
+				else
+				{
+					?>
+					<b><?php echo $xml->closedMessage; ?></b>	
+					<?php		
+				}
+				?>
+			</form>
+			</div>
+			<?php
+		}
+		else
+		{
+			if(isset($_POST['signup_form']))
+			{
+				?>
+				<div class="signup_container"> 
+				<form name="signups" id="signup-form" style="font-size: 16px;">
+					<b>Thank you for signing up! The flying list allocations will be emailed to you later this week.</b>
+				</form>
+				</div>
+				<?php
+			}
+			else
+			{
+			$sat = date("l j F", strtotime('Saturday this week'));
+			$sun = date("l j F", strtotime('Sunday this week'));
+			?>
+
+			<div class="signup_container" id="signup-form"> 
+				<span id="signup-form-box">
+					<font size="4"><b>Gliding Signups For <?php echo $sat; ?> And <?php echo $sun; ?></b></font><br />
+					<form name="signups" action="" method="POST">
+					<p>Use this form to let us know which day(s) you would like to fly this weekend. Once the form has closed we will allocate spaces and let you know via email which day(s) you are flying. If you have any questions please email the flying organiser: flyingorganiser@nugc.net</p>
+					<br />
+					<input type="hidden" name="signup_form" value="true" />
+					<?php displayFormFields($xml); ?>
+					<p>
+					<input type="checkbox" name="remember_me" value="true" <?php if(getSavedField("Remember") == true) echo "checked='checked'"; ?>> <b>Save my details for future</b>
+					</p>
+					<i><font color="red">*</font> indicates required fields.</i><br>
+					<input type="submit" value="Submit" />
+					</form>
+				</span>
+			</div>
+
+			<?php
+			}
+		}
+	}
+	else
+	{
+		?>
+		<div class="signup_container" id="signup-form"> 	
+			<span id="first-page-box">
+				<button onclick="window.location='?page=form';">I have flown before, take me to the signup form</button>
+			</span>
+		</div>
+		
+		<?php
+	}
+}
+
+/* Process the form first - ensures cookies are set before the <HTML> tag */
+// Load the settings file
+$xml = simplexml_load_file("../signup-form.xml") or die("Error loading settings file.");
+if(isFormIsOpen($xml) && isset($_POST['signup_form']))
+{
+	//add form data to weekly spreadsheet
+	processForm($xml);
+		
+	//add form data to master data spreadsheet (for data analysis)
+	processFormDataAnalysis($xml);
+}
+?>

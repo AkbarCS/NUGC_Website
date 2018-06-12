@@ -1,0 +1,12 @@
+Name,Student-ID,Email,Mobile,Next-Of-Kin,Flown-Before?,Day,Driver,Number-Of-Seats
+"Christian Alexander Stubbs",4308304,Psycas@nottingham.ac.uk,07860239160,07933911784,No,Either,No,
+"Michael Geoffrey Crichton",4314894,crichtonm@btinternet.com,07551009302,07810196869,Yes,Either,No,
+"Hugo Ozanne",4288329,psyho1@nottingham.ac.uk,07949122130,07896866807,Yes,Sunday,No,
+"Joseph Baker",4287307,josephbaker1998@gmail.com,07554020256,01302366165,Yes,Saturday,No,
+"Michal Cenzartowicz",4236251,eeymc@nottingham.ac.uk,07519276607,+48600922589,Yes,Saturday,No,
+"Jannik Esslinger",2125983,ppyjmes@nottingham.ac.uk,"+49 17657616757","+49 1728330192",No,Saturday,No,
+"Callum Evans",4248136,eeycre@nottingham.ac.uk,07587690702,01522792716,Yes,Saturday,Yes,4
+"Ayman Kausar",4304362,ayman.kausar@gmail.com,07990011731,07543637175,No,Either,No,
+"Robert Benkel",4250743,robert.benkel@gmail.com,07478302853,07412701936,Yes,Saturday,No,
+"JAMES NASH",nashydodger@gmail.com,nashydodger@gmail.com,07710574396,01214407073,Yes,Both,No,
+"James Wadlow",4278990,jamesdaaboss@me.com,07925940929,07713618634,Yes,Either,No,"Can make own way but can't take others."

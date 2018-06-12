@@ -1,0 +1,8 @@
+Name,Student-ID,Email,Mobile,Next-Of-Kin,Flown-Before?,Day,Driver,Number-Of-Seats
+"Janos Papp",4202255,eeyjp1@nottingham.ac.uk,07873733255,07542848083,Yes,Both,No,
+"Baris Tanyeri",4183078,ezybt3@nottingham.ac.uk,07539447351,07873733255,Yes,Sunday,No,
+"Michal Cenzartowicz",4236251,eeymc@nottingham.ac.uk,07519276607,+48600922589,Yes,Saturday,Yes,5
+"Harry Humble",4253575,Ppyhh@nottingham.ac.uk,07940095684,"07540 762477",Yes,Saturday,No,
+"Ujjwal jairath",4272362,Ujjwaljairath123@gmail.com,07456734054,"+44 7459 491506",No,Saturday,No,
+"Joanna Sak",,Joanna.d.sak@gmail.com,07412701936,"+44 7478 302853",Yes,Saturday,,
+"Rishav gaba",4284430,Rishav17@yahoo.com,"07459 491506",07456734054,No,Saturday,No,

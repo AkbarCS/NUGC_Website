@@ -1,0 +1,44 @@
+@charset "utf-8";
+/* CSS Document */
+html {
+	background-image: url(../bg_pics/activities_bg.jpg);
+	background-repeat: no-repeat;
+	background-position: center center;
+	background-attachment: fixed;
+	background-size:cover;
+	height:100%;
+}
+
+body {
+	background-color:rgba(255,255,255,0.00);
+	padding-top:70px;
+	text-align:center;
+}
+
+.title{
+	color: #FFFFFF;
+	font-family: 'Bree Serif', serif;
+}
+
+.paragraph{
+	max-width: 900px;
+	padding: 25px;
+}
+
+.content{
+	padding:20px;
+}
+
+.navbar{
+	border-radius: 0px;
+}
+
+.author{
+	font-size: 0.7em;
+}
+
+.textbox{
+	background-color: rgba(255,255,255,0.50);
+	border-radius: 20px;
+	margin-bottom: 20px;
+}

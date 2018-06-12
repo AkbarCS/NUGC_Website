@@ -1,0 +1,81 @@
+<?php
+$user = $_POST['user'];
+$pass = $_POST['pass'];
+
+if(isset($_POST['action']))
+{
+	if($user == "admin" && $pass == "PortmoakNU2")
+	{
+		if($_POST['action'] == "login")
+		{
+			$file = file_get_contents("../signup-form.xml");
+			$signupIntropage = file_get_contents("signup-form.php");
+			?>
+			<h2>Signup Form Settings</h2>
+			<form method="POST" action="">
+				<input type="hidden" name="action" value="save-settings" />
+				<input type="hidden" name="user" value="<?php echo $user; ?>" />
+				<input type="hidden" name="pass" value="<?php echo $pass; ?>" />
+				<textarea name="settings" style="margin: 0px; width: 853px; height: 680px;"><?php echo $file; ?></textarea><br />
+				<input type="submit" name="submit" value="Save" />
+			</form>
+			<h2>Signup Intro Page - Contents</h2>
+			<form method="POST" action="">
+				<input type="hidden" name="action" value="save-settings" />
+				<input type="hidden" name="user" value="<?php echo $user; ?>" />
+				<input type="hidden" name="pass" value="<?php echo $pass; ?>" />
+				<textarea name="settings2" style="margin: 0px; width: 853px; height: 680px;"><?php echo $signupIntropage; ?></textarea><br />
+				<input type="submit" name="submit" value="Save" />
+			</form>
+			<form action="downloadSignupsData.php">
+				<input type="hidden" name="action" value="get-signups" />
+				<input type="hidden" name="user" value="<?php echo $user; ?>" />
+				<input type="hidden" name="pass" value="<?php echo $pass; ?>" />
+				<h3>Download this week's signup sheet:</h3>
+				<input type="submit" name="submit" value="Download"/>
+			</form>	
+			<form action="downloadMasterData.php">
+				<input type="hidden" name="action"/>
+				<input type="hidden" name="user" value="<?php echo $user; ?>" />
+				<input type="hidden" name="pass" value="<?php echo $pass; ?>" />
+				<h3>Download Master Data and Statistics</h3>
+				<input type="submit" name="submit" value="Download"/> 
+			</form>			
+			<?php
+		}
+		else if($_POST['action'] == "save-settings")
+		{
+			if(isset($_POST['settings']))
+			{
+				file_put_contents("../signup-form.xml", $_POST['settings']);
+				echo "<h2>Settings saved!</h2>";
+			}
+			else if(isset($_POST['settings2']))
+			{
+				file_put_contents("signup-form.php", $_POST['settings2']);
+				echo "<h2>Intro page saved!</h2>";
+			}
+			else
+			{
+				echo "<h2>Settings failed to save!</h2>";
+			}			
+		}
+	}
+	else
+	{
+		echo "<h2>Username or password incorrect!</h2>";
+	}
+}
+else
+{
+?>
+	<h2>Signup Form Settings</h2>
+	<form method="POST" action="">
+		<input type="hidden" name="action" value="login" />
+		Username: <input type="text" name="user" id = "user12" /><br/>
+		Password: <input type="password" name="pass" /><br/>
+		<input type="submit" name="submit" value="Login" />
+	</form>
+<?php
+}
+?>

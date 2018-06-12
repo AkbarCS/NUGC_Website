@@ -1,0 +1,39 @@
+@charset "utf-8";
+/* CSS Document */
+html {
+	background-image: url(../bg_pics/retrieve_data_bg.jpg);
+	background-repeat: no-repeat;
+	background-position: center center;
+	background-attachment: fixed;
+	background-size:cover;
+	height:100%;
+}
+
+body {
+	background-color:rgba(255,255,255,0.00);
+	padding-top:70px;
+}
+
+.title{
+	color: #FFFFFF;
+	font-family: 'Bree Serif', serif;
+}
+
+.navbar{
+	border-radius: 0px;
+}
+
+h2 {
+  margin: auto;
+  text-align: center;
+  padding-bottom: 20px;
+}
+
+form {
+  margin: auto;
+  text-align: center;
+}
+
+input[type="submit"] {
+  margin-bottom: 20px;
+}
