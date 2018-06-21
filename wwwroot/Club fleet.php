@@ -34,7 +34,7 @@
 <div class="accordion">
 
   	<div class="accordion-section">
-       <a class="accordion-section-title" href="#accordion-1">UoN Gliding Gliders</a> 
+       <a class="accordion-section-title" href="#accordion-1">Our Gliders</a> 
         <div id="accordion-1" class="accordion-section-content">
 			<p class="content">UoN Gliding owns 2 gliders for its members to fly, with no soaring charges, which would normally apply when flying a Cranwell glider. We own both a 2 seat training glider and a single seat glider for solo pilots to move on to. Between these two gliders, the needs of all our members are covered when taking them away on an expedition.</p>
 			<b>Grob 103 Twin II Acro - 'NU2'</b>
