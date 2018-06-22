@@ -52,7 +52,7 @@ class SignupSystem
 	}
 	
 	/* Displays all the form fields */
-	private function displayFormFields()
+	private function displayFormFields($isPreview)
 	{
 		// Display the form fields
 		foreach($this->settings->fields as $field)
@@ -73,7 +73,7 @@ class SignupSystem
 			if($fieldType == "text")
 			{
 				echo "<input type='text' name='signup_$fieldName' ";
-				if($fieldRequired == "true")
+				if($fieldRequired == "true" && $isPreview == "false")
 					echo "required ";
 				echo " value='" . $this->getSavedFieldFromCookie($fieldName) . "' /><br><br>\n";
 			}
@@ -162,7 +162,7 @@ class SignupSystem
 				<p>Use this form to let us know which day(s) you would like to fly this weekend. Once the form has closed we will allocate spaces and let you know via email which day(s) you are flying. If you have any questions please email the flying organiser: flyingorganiser@nugc.net</p>
 				<br />
 				<input type="hidden" name="signup_form" value="true" />
-				<?php $this->displayFormFields(); ?>
+				<?php $this->displayFormFields("false"); ?>
 				<p>
 				<input type="checkbox" name="remember_me" value="true" <?php if($this->getSavedFieldFromCookie("Remember") == true) echo "checked='checked'"; ?>> <b>Save my details for future</b>
 				</p>
@@ -173,6 +173,31 @@ class SignupSystem
 		</div>
 		<?php
 	}
+	
+	public function previewSignupForm()
+	{
+		$sat = date("l j F", strtotime('Saturday this week'));
+		$sun = date("l j F", strtotime('Sunday this week'));
+		?>
+		<div> 
+			<span>
+				<font size="4"><b>Gliding Signups For <?php echo $sat; ?> And <?php echo $sun; ?></b></font><br />
+				<form name="signups" action="" method="POST">
+				<p>Use this form to let us know which day(s) you would like to fly this weekend. Once the form has closed we will allocate spaces and let you know via email which day(s) you are flying. If you have any questions please email the flying organiser: flyingorganiser@nugc.net</p>
+				<br />
+				<input type="hidden" name="signup_form" value="true" />
+				<?php $this->displayFormFields("true"); ?>
+				<p>
+				<input type="checkbox" name="remember_me" value="true" <?php if($this->getSavedFieldFromCookie("Remember") == true) echo "checked='checked'"; ?>> <b>Save my details for future</b>
+				</p>
+				<i><font color="red">*</font> indicates required fields.</i><br>
+				<input type="submit" value="Back to admin page" />
+				</form>
+			</span>
+		</div>
+		<?php
+	}
+	
 	
 	public function submitForm()
 	{
@@ -261,12 +286,27 @@ class SignupSystem
 			// Save to file
 			$this->settings = $data;
 			$this->saveSettingsFile();
-			echo "<h2>Settings saved!</h2>";
+			echo "<h2>Settings saved!</h2>"; ?>
+			
+			<form action="" method="POST">
+				<input type="submit" value="Back to admin page" /><br /><br />
+			</form>
+			
+			<form action="" method="POST">
+				<input type="hidden" name="admin_action" value="logout" />
+				<input type="submit" value="Logout" /><br /><br />
+			</form>
+			
+			<?php
 		}
 		else if(isset($_POST['admin_action']) && $_POST['admin_action'] == "logout")
 		{
 			session_destroy();
 			echo "<h2>Logout successful!</h2>";
+		}
+		else if(isset($_POST['admin_action']) && $_POST['admin_action'] == "preview")
+		{
+			$this->previewSignupForm();
 		}
 		else
 		{
@@ -361,6 +401,12 @@ class SignupSystem
 			<input type="submit" value="Save Changes" /><br /><br />
 			</form>
 			
+			<!-- save signup settings to a local file (changes made are not published live) display signup form !-->
+			<form action="" method="POST" name="admin_form" style="font-size: 16px;">
+				<input type="hidden" name="admin_action" value="preview" />
+				<input type="submit" value="Preview Form" /><br /><br />
+			</form>
+				
 			<form action="download.php" method="GET">
 				<input type="submit" value="Download Signup Sheet" /><br /><br />
 			</form>
@@ -412,7 +458,7 @@ class SignupSystem
 					}
 					else
 					{
-						echo "<h2>Incorrect password</h2>";
+						echo "<h2>Incorrect username and password combination</h2>";
 					}
 				}
 				else
